@@ -1,6 +1,6 @@
 {% set name = "powerloader" %}
-{% set version = "0.5.1" %}
-{% set sha256 = "68a5de7513ed1b43b59716ae63a4b02e3934c97e3c246026b90f95970cfc3852" %}
+{% set version = "0.5.2" %}
+{% set sha256 = "14607bb605a0e5ee7053dac6deaf2619a4e0bb2b835fcf788ffeb69ec366dccb" %}
 
 package:
   name: {{ name|lower }}
@@ -11,70 +11,80 @@ source:
   sha256: {{ sha256 }}
 
 build:
-  number: 3
+  number: 0
   skip: true  # [(win and vc<14) or py==36]
+
+requirements:
+  build:
+    - {{ compiler('cxx') }}
+    - cmake
+    - ninja
+  host:
+    - libcurl >=7.87  # [win or linux]
+    - libcurl 7.86    # [osx]
+    - libcurl-static >=7.87  # [win or linux]
+    - libcurl-static 7.86     # [osx]
+    - openssl
+    - libopenssl-static  # [not win]
+    - libnghttp2-static  # [not win]
+    - zstd-static        # [not win]
+    - libssh2-static     # [not win]
+    - krb5-static        # [not win]
+    - nlohmann_json
+    - zchunk
+    - zchunk-static
+    - spdlog
+    - cpp-expected
+    - cli11
+    - yaml-cpp
 
 outputs:
   - name: powerloader
-    script: build_pl.sh             # [unix]
-    script: build_pl.bat            # [win]
-    requirements:
-      build:
-        - {{ compiler('cxx') }}
-        - cmake
-        - ninja
-      host:
+    build:
+      run:
         - libcurl >=7.87  # [win or linux]
         - libcurl 7.86    # [osx]
         - openssl
-        - nlohmann_json
-        - cli11
         - zchunk
-        - spdlog
-        - cpp-expected
+        - cli11
         - yaml-cpp
-    build:
       run_exports:
         - {{ pin_subpackage(name, max_pin='x.x') }}
+    test:
+      commands:
+
+        - test -f ${PREFIX}/lib/libpowerloader${SHLIB_EXT}                                             # [unix]
+        - test -e ${PREFIX}/bin/powerloader                                                            # [unix]
+        - if not exist %LIBRARY_PREFIX%\lib\libpowerloader.lib (exit 1)                                # [win]
+        - if not exist %LIBRARY_PREFIX%\bin\libpowerloader.dll (exit 1)                                # [win]
+        - if not exist %LIBRARY_PREFIX%\bin\powerloader.exe (exit 1)                                   # [win]
+
+  - name: powerloader-dev
+    requirements:
+      run:
+        - libcurl-static >=7.87  # [win or linux]
+        - libcurl-static 7.86     # [osx]
+        - libopenssl-static  # [not win]
+        - libnghttp2-static  # [not win]
+        - zstd-static        # [not win]
+        - libssh2-static     # [not win]
+        - krb5-static        # [not win]
+        - nlohmann_json
+        - zchunk-static
+        - spdlog
+        - cpp-expected
+        - {{ pin_subpackage('powerloader', exact=True) }}
     test:
       commands:
         - test -d ${PREFIX}/include/powerloader                                                        # [unix]
         - test -f ${PREFIX}/include/powerloader/powerloader.hpp                                        # [unix]
         - test -f ${PREFIX}/lib/cmake/powerloader/powerloaderConfig.cmake                              # [unix]
         - test -f ${PREFIX}/lib/cmake/powerloader/powerloaderConfigVersion.cmake                       # [unix]
-        - test -f ${PREFIX}/lib/libpowerloader${SHLIB_EXT}                                             # [unix]
-        - test -e ${PREFIX}/bin/powerloader                                                            # [unix]
+        - test -f $PREFIX/lib/libpowerloader.a                                                         # [unix]
         - if not exist %LIBRARY_PREFIX%\include\powerloader\powerloader.hpp (exit 1)                   # [win]
         - if not exist %LIBRARY_PREFIX%\lib\cmake\powerloader\powerloaderConfig.cmake (exit 1)         # [win]
         - if not exist %LIBRARY_PREFIX%\lib\cmake\powerloader\powerloaderConfigVersion.cmake (exit 1)  # [win]
-        - if not exist %LIBRARY_PREFIX%\lib\libpowerloader.lib (exit 1)                                # [win]
-        - if not exist %LIBRARY_PREFIX%\bin\libpowerloader.dll (exit 1)                                # [win]
-        - if not exist %LIBRARY_PREFIX%\bin\powerloader.exe (exit 1)                                   # [win]
-
-  - name: powerloader-static
-    script: build_pl.sh             # [unix]
-    script: build_pl.bat            # [win]
-    requirements:
-      build:
-        - {{ compiler('cxx') }}
-        - cmake
-        - ninja
-      host:
-        - libcurl >=7.87  # [win or linux]
-        - libcurl 7.86    # [osx]
-        - openssl
-        - nlohmann_json
-        - cli11
-        - zchunk
-        - spdlog
-        - cpp-expected
-        - yaml-cpp
-      run:
-        - {{ pin_subpackage('powerloader', exact=True) }}
-    test:
-      commands:
-        - test -f $PREFIX/lib/libpowerloader.a  # [not win]
-        - if not exist %LIBRARY_LIB%\libpowerloader_static.lib exit 1  # [win]
+        - if not exist %LIBRARY_LIB%\libpowerloader_static.lib exit 1                                  # [win]
 
 
 about:
