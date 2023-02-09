@@ -15,12 +15,4 @@ cmake .. ${CMAKE_ARGS}              \
     -DENABLE_PYTHON=OFF
 
 ninja
-
-if [[ $PKG_NAME == "powerloader" ]]; then
-    cp libpowerloader.so $PREFIX/lib/
-    cp powerloader $PREFIX/bin/
-elif [[ $PKG_NAME == "powerloader-dev" ]]; then
-    ninja install
-    rm $PREFIX/lib/libpowerloader.so
-    rm $PREFIX/bin/powerloader
-fi
+ninja install

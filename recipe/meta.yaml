@@ -9,6 +9,8 @@ package:
 source:
   url: https://github.com/mamba-org/powerloader/archive/{{ version }}.tar.gz
   sha256: {{ sha256 }}
+  patches:
+    - patch/01-win-export.patch
 
 build:
   number: 0
@@ -40,7 +42,16 @@ requirements:
 
 outputs:
   - name: powerloader
+    files:
+      - bin/powerloader         # [unix]
+      - lib/libpowerloader.so   # [unix]
+      - Library\bin\powerloader.exe     # [win]
+      - Library\bin\libpowerloader.dll  # [win]
+      - Library\lib\libpowerloader.lib  # [win]
     build:
+      run_exports:
+        - {{ pin_subpackage(name, max_pin='x.x') }}
+    requirements:
       run:
         - libcurl >=7.87  # [win or linux]
         - libcurl 7.86    # [osx]
@@ -48,8 +59,6 @@ outputs:
         - zchunk
         - cli11
         - yaml-cpp
-      run_exports:
-        - {{ pin_subpackage(name, max_pin='x.x') }}
     test:
       commands:
 
@@ -60,6 +69,13 @@ outputs:
         - if not exist %LIBRARY_PREFIX%\bin\powerloader.exe (exit 1)                                   # [win]
 
   - name: powerloader-dev
+    files:
+      - include/powerloader                     # [unix]
+      - lib/cmake/powerloader                   # [unix]
+      - lib/libpowerloader.a                    # [unix]
+      - Library\include\powerloader             # [win]
+      - Library\lib\cmake\powerloader           # [win]
+     #- Llibrary\lib\libpowerloader_static.lib  # [win]
     requirements:
       run:
         - libcurl-static >=7.87  # [win or linux]
@@ -84,7 +100,7 @@ outputs:
         - if not exist %LIBRARY_PREFIX%\include\powerloader\powerloader.hpp (exit 1)                   # [win]
         - if not exist %LIBRARY_PREFIX%\lib\cmake\powerloader\powerloaderConfig.cmake (exit 1)         # [win]
         - if not exist %LIBRARY_PREFIX%\lib\cmake\powerloader\powerloaderConfigVersion.cmake (exit 1)  # [win]
-        - if not exist %LIBRARY_LIB%\libpowerloader_static.lib exit 1                                  # [win]
+       #- if not exist %LIBRARY_LIB%\libpowerloader_static.lib exit 1                                  # [win]
 
 
 about:

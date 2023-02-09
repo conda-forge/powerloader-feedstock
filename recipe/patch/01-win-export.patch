@@ -1,0 +1,16 @@
+diff --git a/include/powerloader/context.hpp b/include/powerloader/context.hpp
+index d3053517..6923474e 100644
+--- a/include/powerloader/context.hpp
++++ b/include/powerloader/context.hpp
+@@ -26,6 +26,11 @@ namespace powerloader
+ 
+     namespace details
+     {
++        // Even if this is a private function, it is called form a template.
++        // Some versions of MSVC instantiate the template on the client code
++        // and therefore the situation is the same as calling this method from
++        // another binary, leading to a link error if this is not exported.
++        POWERLOADER_API 
+         bool already_exists(const MirrorID& id, const mirror_set& mirrors);
+         bool is_every_mirror_unique_per_host(const mirror_map_base& mirrors);
+     }
